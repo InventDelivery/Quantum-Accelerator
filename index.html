@@ -429,6 +429,36 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px
 .save-modal-title{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:4px}
 .save-modal-sub{font-size:12px;color:var(--t3);margin-bottom:20px;line-height:1.6}
 @media(max-width:760px){.hub-stats{grid-template-columns:1fr 1fr!important}}
+
+/* SOURCE BADGES */
+.src-badge{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid var(--border);background:var(--s2);color:var(--t3);margin-left:6px;vertical-align:middle;white-space:nowrap;letter-spacing:.03em}
+.src-gmail{border-color:rgba(190,79,219,.25);background:var(--purple-subtle);color:var(--purple-dark)}
+.src-upload{border-color:rgba(45,184,122,.25);background:var(--ok-bg);color:var(--ok)}
+.src-manual{border-color:rgba(168,216,232,.35);background:var(--blue-subtle);color:#1e6880}
+.src-brief{border-color:rgba(200,232,64,.35);background:rgba(200,232,64,.1);color:#3d5000}
+.req-auto-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--purple-subtle);border:1px solid rgba(190,79,219,.2);border-radius:var(--radius-sm);margin-bottom:14px;font-size:12px;color:var(--purple-dark)}
+.req-auto-spin{width:12px;height:12px;border:2px solid rgba(190,79,219,.3);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* ENRICH CLIENT */
+.enrich-bar{background:linear-gradient(135deg,#1a0a22,#2a0d35);border:1px solid rgba(190,79,219,.35);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
+.enrich-bar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top right,rgba(190,79,219,.15),transparent 65%);pointer-events:none}
+.enrich-bar-left{display:flex;align-items:center;gap:12px}
+.enrich-bar-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 3px 14px rgba(190,79,219,.4)}
+.enrich-bar-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.enrich-bar-sub{font-size:11px;color:rgba(255,255,255,.5);line-height:1.5}
+.enrich-sources{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.enrich-source-tag{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);background:rgba(255,255,255,.06);letter-spacing:.04em}
+.enrich-btn{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--radius-sm);font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;border:none;background:var(--purple);color:#fff;box-shadow:0 2px 18px rgba(190,79,219,.45);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.enrich-btn:hover:not(:disabled){background:var(--purple-dark);box-shadow:0 4px 26px rgba(190,79,219,.6);transform:translateY(-1px)}
+.enrich-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.enrich-btn .spinner{border-color:rgba(255,255,255,.3);border-top-color:#fff}
+.enrich-log{margin-top:14px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:12px 14px;max-height:180px;overflow-y:auto;display:none}
+.enrich-log-line{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6);line-height:1.7;display:flex;align-items:flex-start;gap:7px}
+.enrich-log-line.done{color:rgba(45,220,140,.75)}
+.enrich-log-line.working{color:rgba(190,79,219,.9)}
+.enrich-log-line.warn{color:rgba(230,168,23,.75)}
+.enrich-log-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;margin-top:5px}
+.src-enrich{border-color:rgba(190,79,219,.35);background:rgba(190,79,219,.1);color:var(--purple-dark)}
 </style>
 </head>
 <body>
@@ -453,7 +483,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px
   <div class="hdr-inner">
     <span class="logo-text">invent.ai</span>
     <div class="hdr-meta">
-      <div class="hdr-pill"><div class="hdr-dot"></div>Quantum Accelerator v4</div>
+      <div class="hdr-pill"><div class="hdr-dot"></div>Quantum Accelerator v6</div>
       <div class="hdr-tag">Internal Tool</div>
       <button class="btn btn-primary btn-sm" id="hdr-save-btn" onclick="openSaveModal()" style="display:none">↑ Save Client</button>
     </div>
@@ -541,6 +571,35 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px
 <div class="view" id="view-brief">
   <div style="font-family:var(--serif);font-size:22px;font-weight:500;margin-bottom:5px">Client Brief</div>
   <div style="font-size:13px;color:var(--t3);margin-bottom:20px;line-height:1.6">Upload a discovery document or paste notes. Claude extracts and structures key information into a Project Brief.</div>
+
+  <!-- ✦ ENRICH CLIENT BAR -->
+  <div class="enrich-bar" id="enrich-bar" style="flex-direction:column;align-items:stretch">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div class="enrich-bar-left">
+        <div class="enrich-bar-icon">✦</div>
+        <div>
+          <div class="enrich-bar-title">Enrich Client</div>
+          <div class="enrich-bar-sub">Enter a client name below, then click Enrich to auto-populate Brief &amp; Requirements from all sources simultaneously.</div>
+          <div class="enrich-sources" style="margin-top:6px">
+            <span class="enrich-source-tag">📧 Gmail</span>
+            <span class="enrich-source-tag">💬 Slack</span>
+            <span class="enrich-source-tag">📄 Confluence</span>
+            <span class="enrich-source-tag">🎯 Jira</span>
+            <span class="enrich-source-tag">📁 Drive</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <button class="enrich-btn" id="enrich-btn" onclick="enrichClient()">
+          <span id="enrich-lbl">⚡ Enrich Client</span>
+          <div id="enrich-spin" class="spinner" style="display:none"></div>
+        </button>
+        <div id="enrich-no-client" style="display:none;font-size:10px;color:rgba(230,168,23,.8);text-align:right">⚠ Enter client name in Manual Fields first</div>
+      </div>
+    </div>
+    <div class="enrich-log" id="enrich-log"></div>
+  </div>
+
   <div class="brief-layout">
     <div>
       <div class="panel active" style="display:block;margin-bottom:14px">
@@ -647,6 +706,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px
       </div>
     </div>
     <div class="req-results-wrap">
+      <div id="req-auto-banner" class="req-auto-banner" style="display:none">
+        <div class="req-auto-spin"></div>
+        <span>Auto-populating from Client Brief…</span>
+      </div>
       <div id="req-context-strip" class="req-context-strip" style="display:none">
         <div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--purple);margin-bottom:6px">Client Context</div>
         <div id="req-context-text" style="font-size:13px;color:var(--t2);line-height:1.7"></div>
@@ -1138,8 +1201,10 @@ var briefData = null;
 var uploadedText = null;
 var reqSolScope = Object.keys(SOL_KNOWLEDGE);
 var gmailCache = {};
-var dqAnswers = {}; // {sectionId_qIndex: {answer:'', status:'unanswered'}}
+var dqAnswers = {};
 var saData = null;
+var briefSources = [];
+var gmailImported = false;
 
 // ── VIEW SWITCHING ──
 function switchView(v) {
@@ -1299,11 +1364,33 @@ function renderReqSolChips(){
   }).join('');
 }
 function togReqSol(id,el){var idx=reqSolScope.indexOf(id);if(idx>-1)reqSolScope.splice(idx,1);else reqSolScope.push(id);el.classList.toggle('on');}
-function fillBucket(bodyId,cntId,items){
+function fillBucket(bodyId,cntId,items,src){
   var body=document.getElementById(bodyId),cnt=document.getElementById(cntId);
   cnt.textContent=items.length;
   if(!items.length){var icon=bodyId==='bkt-gap'?'✕':bodyId==='bkt-int'?'⇄':bodyId==='bkt-adv'?'◈':'●';body.innerHTML='<div class="req-empty">'+icon+' None identified</div>';return;}
-  body.innerHTML=items.map(function(html){return'<div class="req-item"><div class="req-item-dot"></div><div>'+html+'</div></div>';}).join('');
+  var badge=src?'<span class="src-badge '+srcClass(src)+'">'+srcLabel(src)+'</span>':'';
+  body.innerHTML=items.map(function(html){return'<div class="req-item"><div class="req-item-dot"></div><div>'+html+badge+'</div></div>';}).join('');
+}
+
+async function autoRunRequirements(ctx, clientName){
+  // Show auto-running banner on Requirements tab
+  var banner=document.getElementById('req-auto-banner');
+  if(banner){banner.style.display='flex';}
+  // Sync client name to req tab
+  if(clientName) document.getElementById('req-client').value=clientName;
+  // Use brief context as the notes
+  document.getElementById('req-notes').value=ctx||'';
+
+  var scopedKB=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
+  var prompt='You are a senior pre-sales solution consultant at invent.ai.\nAnalyse the client discovery notes and classify requirements against invent.ai capabilities.\n'+(clientName?'CLIENT: '+clientName+'\n\n':'')+'DISCOVERY NOTES:\n'+ctx+'\n\nINVENT.AI CAPABILITIES IN SCOPE:\n'+scopedKB+'\n\nReturn ONLY valid JSON, no markdown:\n{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
+  try{
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    renderReqResults(result,clientName,'brief');
+  }catch(err){console.warn('Auto requirements failed:',err);}
+  finally{if(banner)banner.style.display='none';}
 }
 async function runRequirementsReview(){
   var notes=document.getElementById('req-notes').value.trim(),client=document.getElementById('req-client').value.trim();
@@ -1314,7 +1401,7 @@ async function runRequirementsReview(){
   var scopedKB=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
   var prompt='You are a senior pre-sales solution consultant at invent.ai.\nAnalyse the client discovery notes and classify requirements against invent.ai capabilities.\n'+(client?'CLIENT: '+client+'\n\n':'')+'DISCOVERY NOTES:\n'+notes+'\n\nINVENT.AI CAPABILITIES IN SCOPE:\n'+scopedKB+'\n\nReturn ONLY valid JSON, no markdown:\n{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -1322,12 +1409,13 @@ async function runRequirementsReview(){
   }catch(err){alert('Analysis failed: '+err.message);}
   finally{btn.disabled=false;lbl.textContent='✦ Analyse Requirements';spin.style.display='none';}
 }
-function renderReqResults(d,client){
+function renderReqResults(d,client,src){
   if(d.clientSummary){document.getElementById('req-context-strip').style.display='block';document.getElementById('req-context-text').textContent=d.clientSummary;}
-  fillBucket('bkt-core','cnt-core',(d.core||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.solution?' — <span style="color:var(--purple-dark);font-size:10px">'+x.solution+'</span>':'');}));
-  fillBucket('bkt-adv','cnt-adv',(d.advanced||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.note?' — <span style="color:var(--t3);font-size:10px">'+x.note+'</span>':'');}));
-  fillBucket('bkt-gap','cnt-gap',(d.gaps||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.note?' — <span style="color:var(--t3);font-size:10px">'+x.note+'</span>':'');}));
-  fillBucket('bkt-int','cnt-int',(d.integrations||[]).map(function(x){return'<strong>'+x.system+'</strong> <span style="font-size:10px;color:var(--t3)">'+x.type+' · '+x.priority+' priority</span>';}));
+  var srcTag=src||'manual';
+  fillBucket('bkt-core','cnt-core',(d.core||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.solution?' — <span style="color:var(--purple-dark);font-size:10px">'+x.solution+'</span>':'');}),srcTag);
+  fillBucket('bkt-adv','cnt-adv',(d.advanced||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.note?' — <span style="color:var(--t3);font-size:10px">'+x.note+'</span>':'');}),srcTag);
+  fillBucket('bkt-gap','cnt-gap',(d.gaps||[]).map(function(x){return'<strong>'+x.requirement+'</strong>'+(x.note?' — <span style="color:var(--t3);font-size:10px">'+x.note+'</span>':'');}),srcTag);
+  fillBucket('bkt-int','cnt-int',(d.integrations||[]).map(function(x){return'<strong>'+x.system+'</strong> <span style="font-size:10px;color:var(--t3)">'+x.type+' · '+x.priority+' priority</span>';}),srcTag);
   var recCard=document.getElementById('rec-card'),recBody=document.getElementById('rec-body');
   document.getElementById('rec-sub').textContent='Based on discovery context'+(client?' — '+client:'');
   recCard.style.display='block';
@@ -1343,7 +1431,7 @@ async function suggestSolutions(){
   var kbContext=Object.entries(CONFLUENCE_KB).map(function(e){var id=e[0],sol=e[1];return'### '+sol.name+' ('+sol.confluenceUrl+')\nSignals: '+sol.signals.join(', ')+'\n'+sol.description;}).join('\n\n');
   var prompt='You are a senior invent.ai pre-sales consultant. Based on the client discovery notes, recommend which invent.ai solutions should be in scope.\n\nConfluence knowledge:\n'+kbContext+'\n\nCLIENT NOTES:\n'+notes+'\n\nReturn ONLY valid JSON:\n{"recommended":["alloc","sr","tr","dc","bo","as","mfp"],"reasoning":{"alloc":"string","sr":"string","tr":"string","dc":"string","bo":"string","as":"string","mfp":"string"},"summary":"string"}';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1467,7 +1555,7 @@ async function runSAReview(){
   var scopedSolutions=reqSolScope.map(function(id){return SOL_KNOWLEDGE[id]?SOL_KNOWLEDGE[id].name:id;}).join(', ');
   var prompt='You are a senior Solution Architect at invent.ai. Conduct a proactive risk assessment for this engagement.\n\n'+(clientName?'Client: '+clientName+'\n':'')+(industry?'Industry: '+industry+'\n':'')+(objectives?'Objectives: '+objectives+'\n':'')+(constraints?'Constraints: '+constraints+'\n':'')+(briefNotes?'Brief: '+briefNotes+'\n':'')+(reqNotes?'Discovery Notes: '+reqNotes+'\n':'')+'Solutions in Scope: '+scopedSolutions+'\n'+(coreItems?'Core requirements: '+coreItems+'\n':'')+(advItems?'Advanced: '+advItems+'\n':'')+(gapItems?'Gaps identified: '+gapItems+'\n':'')+(intItems?'Integrations: '+intItems+'\n':'')+'\nReturn ONLY valid JSON:\n{"riskSummary":"string","risks":[{"id":"R001","category":"DATA_GAP|OUT_OF_SCOPE|CAPABILITY_GAP|INTEGRATION_RISK|DELIVERY_RISK|DATA_QUALITY","severity":"Critical|High|Medium|Low","title":"string","description":"string","impact":"string","mitigation":"string","owner":"SA|Data Team|Client|PM|Product","timing":"Pre-Discovery|During Discovery|Pre-Go-Live|Ongoing"}],"preDeliveryActions":[{"priority":1,"title":"string","description":"string","owner":"string","linkedRisks":["R001"]}]}';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1514,6 +1602,38 @@ function clearSANotes(){if(!confirm('Clear all SA notes?'))return;['san-question
 function copySANotes(){var client=document.getElementById('b-client').value.trim()||'Client';var q=document.getElementById('san-questions').value.trim(),n=document.getElementById('san-decisions').value.trim();if(!q&&!n){alert('No notes to copy yet.');return;}var lines=['SA NOTES — '+client,new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),''];if(q){lines.push('OPEN QUESTIONS');lines.push(q);lines.push('');}if(n){lines.push('NEXT STEPS');lines.push(n);}navigator.clipboard.writeText(lines.join('\n')).then(function(){showBanner();});}
 
 // ── READINESS SCORECARD ──
+// Delivery Framework gold standard extracted from Delivery_Framework_20260301.xlsx
+var DELIVERY_FRAMEWORK = {
+  stages:[
+    {id:'1',name:'Project Initiation',exitCriteria:['Sales to Delivery Handover Checklist completed','Customer onboarding completed (all action items checked off)','Product alignment meeting held — technical requirements & gaps documented','Project scope, deliverables, and timeline agreed','Resource plan confirmed','Official kick-off meeting held with client','Project Confluence page (1. Client Information) populated']},
+    {id:'2',name:'Data Collection',exitCriteria:['Data transfer infrastructure established','Data requirements communicated via I/O template','Historical data received for all priority data sets','Daily data pipeline up and running for each feed','Descriptive analysis aligned with client','Data integration completed for all data sets','Project Confluence page (2. Data Structure) populated']},
+    {id:'3',name:'Concept Design',exitCriteria:["Client's as-is business situation documented",'List of all client expectations captured','Feature requests ticketed and Feature Request Management Flow confirmed','KPIs agreed and success measurement defined','Solution concept design document created and signed off by product team','Concept design aligned with client']},
+    {id:'4',name:'Base Implementation',exitCriteria:['3-Day DAG (3DD) e2e run successful for 3 consecutive days','Base UI screens open and working','Outputs written to client output bucket in correct format','Base reports up and running','Environments (UAT, PROD) confirmed']},
+    {id:'5',name:'Advanced Implementation',exitCriteria:['Store/product clusters defined','Profit-maximising service levels validated per cluster','Seasonality curve configured','Safety stock calibrated','Benchmark KPIs calculated (pre-test values established)','Simulation conducted to prove benefit (if required by SA)']},
+    {id:'6',name:'Testing & Quality Assurance',exitCriteria:['Result Quality Checklist completed','E2E system testing passed','Fail logs kept for 7+ days','CX-IT handover session completed','Internal steerco held','Go / No-Go decision confirmed with client']},
+    {id:'7',name:'Go-Live',exitCriteria:['User training sessions completed','Change management plan agreed with client','Documentation delivered (user manuals, system guides)','Solution live and running for at least 1 week','Release notes process in place']},
+    {id:'8',name:'Hypercare',exitCriteria:['CX Consulting Team formally introduced to client','KPIs monitored and proving benefit','Internal + client steerco held','FAQ document started']},
+    {id:'9',name:'Handover',exitCriteria:['Open topics backlogged','Internal retro completed','NPS sent','Business case created','Transition to CX completed']}
+  ],
+  preKickoffRequirements:[
+    'SOW / contract signed and shared with delivery team',
+    'Sales to Delivery Handover Checklist completed by sales',
+    'Client stakeholders and key contacts identified',
+    'Data availability confirmed (historical transactional data accessible)',
+    'IT/technical environment accessible (data storage, credentials, connectivity)',
+    'Solution scope agreed and documented',
+    'Go-live timeline agreed and feasible',
+    'Client internal champion / project sponsor identified',
+    'ERP / source system integration approach understood',
+    'Data format and frequency of feeds agreed'
+  ],
+  scoringBands:[
+    {min:80,max:100,verdict:'Ready for Kickoff',color:'#2db87a',description:'Client meets the gold standard criteria from the invent.ai Delivery Framework. Safe to initiate Project Initiation (Stage 1) and schedule official kick-off.'},
+    {min:60,max:79,verdict:'Proceed with Caution',color:'#e6a817',description:'Scope gaps or risks exist that must be addressed before or during Data Collection. Escalate to SA and Delivery Manager before proceeding.'},
+    {min:0,max:59,verdict:'Not Ready for Onboarding',color:'#e04444',description:'Critical pre-conditions from the Delivery Framework are unmet. Do not initiate delivery. Return to pre-sales to resolve blockers.'}
+  ]
+};
+
 async function runScorecard(){
   var clientName=document.getElementById('b-client').value.trim()||document.getElementById('req-client').value.trim();
   var industry=document.getElementById('b-industry').value.trim();
@@ -1521,15 +1641,23 @@ async function runScorecard(){
   var briefNotes=document.getElementById('paste-input').value.trim();
   var objectives=document.getElementById('b-objectives').value.trim();
   var constraints=document.getElementById('b-constraints').value.trim();
-  var gapItems=Array.from(document.querySelectorAll('#bkt-gap .req-item')).map(function(el){return el.innerText;}).join('; ');
-  var intItems=Array.from(document.querySelectorAll('#bkt-int .req-item')).map(function(el){return el.innerText;}).join('; ');
-  var saRisks=saData?JSON.stringify(saData.risks||[]):'';
-  if(!clientName&&!reqNotes&&!briefNotes){alert('Please complete the Client Brief or Requirements Review first.');return;}
+  var coreItems=Array.from(document.querySelectorAll('#bkt-core .req-item')).map(function(el){return el.innerText.trim();}).join('; ');
+  var gapItems=Array.from(document.querySelectorAll('#bkt-gap .req-item')).map(function(el){return el.innerText.trim();}).join('; ');
+  var intItems=Array.from(document.querySelectorAll('#bkt-int .req-item')).map(function(el){return el.innerText.trim();}).join('; ');
+  var advItems=Array.from(document.querySelectorAll('#bkt-adv .req-item')).map(function(el){return el.innerText.trim();}).join('; ');
+  var saRisks=saData?(saData.risks||[]).map(function(r){return'['+r.severity+'] '+r.title;}).join('; '):'';
+  if(!clientName&&!reqNotes&&!briefNotes){alert('Run Enrich Client or complete the Client Brief first.');return;}
   var btn=document.getElementById('score-run-btn'),lbl=document.getElementById('score-run-lbl'),spin=document.getElementById('score-run-spin');
-  btn.disabled=true;lbl.textContent='Scoring…';spin.style.display='block';
-  var prompt='You are a senior delivery consultant at invent.ai. Generate an engagement readiness scorecard for this client.\n\n'+(clientName?'Client: '+clientName+'\n':'')+(industry?'Industry: '+industry+'\n':'')+(objectives?'Objectives: '+objectives+'\n':'')+(constraints?'Constraints: '+constraints+'\n':'')+(reqNotes||briefNotes?'Discovery context: '+(reqNotes||briefNotes).substring(0,600)+'\n':'')+(gapItems?'Gaps: '+gapItems+'\n':'')+(intItems?'Integrations needed: '+intItems+'\n':'')+(saRisks?'SA Risks: '+saRisks.substring(0,400)+'\n':'')+'\nScore 1-10 across these dimensions and provide an overall score.\nReturn ONLY valid JSON:\n{"overallScore":8,"overallVerdict":"Ready to Proceed|Proceed with Caution|High Risk","overallNarrative":"string","dimensions":[{"label":"Data Readiness","score":7,"color":"#BE4FDB","description":"string","recommendation":"string"},{"label":"Scope Clarity","score":8,"color":"#D68FE0","description":"string","recommendation":"string"},{"label":"Integration Complexity","score":6,"color":"#A8D8E8","description":"string","recommendation":"string"},{"label":"Timeline Feasibility","score":7,"color":"#8aaa00","description":"string","recommendation":"string"},{"label":"Change Management","score":5,"color":"#C8E840","description":"string","recommendation":"string"},{"label":"Technical Readiness","score":8,"color":"#7ab8cc","description":"string","recommendation":"string"}]}';
+  btn.disabled=true;lbl.textContent='Scoring against framework…';spin.style.display='block';
+
+  var frameworkContext='INVENT.AI DELIVERY FRAMEWORK — PRE-KICKOFF REQUIREMENTS (Gold Standard):\n'+DELIVERY_FRAMEWORK.preKickoffRequirements.map(function(r,i){return(i+1)+'. '+r;}).join('\n')+'\n\nDELIVERY FRAMEWORK STAGES & EXIT CRITERIA:\n'+DELIVERY_FRAMEWORK.stages.map(function(s){return 'Stage '+s.id+' — '+s.name+':\n'+s.exitCriteria.map(function(e){return'  • '+e;}).join('\n');}).join('\n\n');
+
+  var clientContext='CLIENT: '+(clientName||'Unknown')+'\nINDUSTRY: '+(industry||'Not specified')+'\nOBJECTIVES: '+(objectives||'Not captured')+'\nCONSTRAINTS: '+(constraints||'Not captured')+'\nDISCOVERY NOTES:\n'+(reqNotes||briefNotes||'').substring(0,1200)+'\nSOLUTIONS IN SCOPE: '+reqSolScope.join(', ')+(coreItems?'\nCORE REQUIREMENTS MET: '+coreItems:'')+(gapItems?'\nGAPS IDENTIFIED: '+gapItems:'')+(intItems?'\nINTEGRATIONS NEEDED: '+intItems:'')+(advItems?'\nADVANCED REQUIREMENTS: '+advItems:'')+(saRisks?'\nSA RISKS: '+saRisks:'');
+
+  var prompt=frameworkContext+'\n\n---\n\n'+clientContext+'\n\n---\n\nYou are a senior invent.ai Delivery Manager assessing this client\'s readiness for onboarding against the invent.ai Delivery Framework gold standard above.\n\nSCORING RULES (score 0–100 overall):\n- 80–100: Ready for Kickoff — all pre-kickoff requirements met, data available, scope clear, stakeholders confirmed\n- 60–79: Proceed with Caution — material gaps exist but engagement can start with mitigation plan\n- 0–59: Not Ready for Onboarding — critical blockers unmet, return to pre-sales\n\nScore each dimension 0–100. Weighted overall score = weighted average.\n\nDIMENSIONS (assess each against the framework):\n1. Data Readiness (weight 25%) — historical data accessible, feeds agreed, pipeline feasible\n2. Scope & Requirements Clarity (weight 20%) — SOW clarity, solution scope confirmed, requirements documented\n3. Stakeholder & Governance (weight 15%) — exec sponsor identified, project champion confirmed, governance model agreed\n4. Technical & Integration Readiness (weight 20%) — ERP/source system access, IT environment, integration approach understood\n5. Timeline Feasibility (weight 10%) — go-live date realistic against framework stage durations\n6. Change Management Readiness (weight 10%) — client awareness of process change, training plan feasibility\n\nFor each blocker identified, map it to the framework stage it would block (e.g. "Blocks Stage 2: Data Collection").\n\nReturn ONLY valid JSON:\n{"overallScore":72,"overallVerdict":"Ready for Kickoff|Proceed with Caution|Not Ready for Onboarding","overallNarrative":"string (2-3 sentences referencing the framework)","frameworkBand":{"min":60,"max":79,"color":"#e6a817"},"preKickoffCheckResults":[{"requirement":"string","status":"Met|Partial|Not Met|Unknown","note":"string"}],"dimensions":[{"label":"Data Readiness","weight":25,"score":65,"color":"#BE4FDB","description":"string","blockedStage":"Stage 2: Data Collection","recommendation":"string"},{"label":"Scope & Requirements Clarity","weight":20,"score":80,"color":"#D68FE0","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Stakeholder & Governance","weight":15,"score":70,"color":"#A8D8E8","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Technical & Integration Readiness","weight":20,"score":60,"color":"#7ab8cc","description":"string","blockedStage":"Stage 1: Project Initiation","recommendation":"string"},{"label":"Timeline Feasibility","weight":10,"score":75,"color":"#8aaa00","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Change Management Readiness","weight":10,"score":55,"color":"#C8E840","description":"string","blockedStage":"Stage 7: Go-Live","recommendation":"string"}],"criticalBlockers":[{"blocker":"string","frameworkStage":"string","priority":"Critical|High|Medium","action":"string"}],"nextSteps":["string"]}';
+
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1538,19 +1666,77 @@ async function runScorecard(){
   }catch(err){alert('Scorecard failed: '+err.message);}
   finally{btn.disabled=false;lbl.textContent='✦ Generate Scorecard';spin.style.display='none';}
 }
+
 function renderScorecard(d){
   document.getElementById('score-empty').style.display='none';
   document.getElementById('score-results').style.display='block';
-  var verdictColor=d.overallVerdict==='Ready to Proceed'?'var(--ok)':d.overallVerdict==='Proceed with Caution'?'var(--warn)':'var(--danger)';
-  document.getElementById('score-overall').innerHTML='<div class="score-big" style="color:'+verdictColor+'">'+d.overallScore+'/10</div><div><div class="score-label">Overall Readiness</div><div class="score-verdict" style="color:'+verdictColor+'">'+d.overallVerdict+'</div><div class="score-narrative">'+d.overallNarrative+'</div></div>';
+
+  // Band colours based on framework bands
+  var band=d.frameworkBand||{};
+  var bandColor=d.overallVerdict==='Ready for Kickoff'?'var(--ok)':d.overallVerdict==='Proceed with Caution'?'var(--warn)':'var(--danger)';
+  var score=d.overallScore||0;
+
+  // Overall score panel with gauge
+  var gaugeAngle=Math.min(score,100)/100*180;
+  document.getElementById('score-overall').innerHTML=
+    '<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">'
+    +'<div style="position:relative;width:140px;height:75px;flex-shrink:0">'
+    +'<svg viewBox="0 0 140 75" style="width:140px;height:75px"><path d="M10,70 A60,60 0 0,1 130,70" fill="none" stroke="var(--border)" stroke-width="14" stroke-linecap="round"/><path d="M10,70 A60,60 0 0,1 130,70" fill="none" stroke="'+bandColor+'" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+(gaugeAngle/180*188.5)+' 188.5" opacity="0.9"/><text x="70" y="68" text-anchor="middle" font-family="Playfair Display,Georgia,serif" font-size="28" font-weight="500" fill="'+bandColor+'">'+score+'</text><text x="70" y="75" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="var(--t4)" letter-spacing="1">/100</text></svg>'
+    +'</div>'
+    +'<div style="flex:1;min-width:200px">'
+    +'<div class="score-label" style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:4px">Framework Readiness Score</div>'
+    +'<div class="score-verdict" style="font-size:18px;font-weight:700;color:'+bandColor+';margin-bottom:6px">'+d.overallVerdict+'</div>'
+    +'<div style="font-size:11px;font-family:var(--mono);color:'+bandColor+';background:'+bandColor+'18;border:1px solid '+bandColor+'44;border-radius:5px;padding:4px 10px;display:inline-block;margin-bottom:8px">'+
+    (score>=80?'▶ Safe to initiate Stage 1: Project Initiation':score>=60?'⚠ Address gaps before or during Stage 1':'✕ Do not initiate delivery — resolve blockers first')+
+    '</div>'
+    +'<div class="score-narrative" style="font-size:12px;color:var(--t2);line-height:1.65">'+d.overallNarrative+'</div>'
+    +'</div></div>';
+
+  // Dimension bars
   document.getElementById('score-grid').innerHTML=(d.dimensions||[]).map(function(dim){
-    var barColor=dim.score>=7?'var(--ok)':dim.score>=5?'var(--warn)':'var(--danger)';
-    return'<div class="score-card"><div class="score-card-label">'+dim.label+'</div><div class="score-card-value" style="color:'+barColor+'">'+dim.score+'/10</div><div class="score-bar"><div class="score-bar-fill" style="width:'+(dim.score*10)+'%;background:'+barColor+'"></div></div><div class="score-desc">'+dim.description+'</div></div>';
+    var barColor=dim.score>=80?'var(--ok)':dim.score>=60?'var(--warn)':'var(--danger)';
+    var blockBadge=dim.blockedStage?'<div style="font-family:var(--mono);font-size:9px;color:var(--danger);margin-top:4px;padding:2px 6px;background:var(--danger-bg);border-radius:3px;display:inline-block">Blocks: '+dim.blockedStage+'</div>':'';
+    return'<div class="score-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+      +'<div class="score-card-label" style="font-size:11px;font-weight:700">'+dim.label+'</div>'
+      +'<div style="display:flex;align-items:center;gap:5px"><span style="font-family:var(--mono);font-size:9px;color:var(--t4)">wt '+dim.weight+'%</span><div class="score-card-value" style="color:'+barColor+';font-size:16px">'+dim.score+'</div></div>'
+      +'</div>'
+      +'<div class="score-bar" style="height:6px;background:var(--border);border-radius:3px;margin-bottom:6px"><div style="height:100%;width:'+dim.score+'%;background:'+barColor+';border-radius:3px;transition:width .4s ease"></div></div>'
+      +'<div class="score-desc" style="font-size:11px;color:var(--t3);line-height:1.5">'+dim.description+'</div>'
+      +blockBadge
+      +'</div>';
   }).join('');
-  document.getElementById('score-detail').innerHTML=(d.dimensions||[]).map(function(dim){
-    var barColor=dim.score>=7?'var(--ok)':dim.score>=5?'var(--warn)':'var(--danger)';
-    return'<div class="action-item"><div class="action-num" style="background:'+barColor+'">'+dim.score+'</div><div><div class="action-title">'+dim.label+'</div><div class="action-desc">'+dim.recommendation+'</div></div></div>';
-  }).join('');
+
+  // Pre-kickoff checklist
+  var checkHtml='<div style="margin-bottom:14px"><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Pre-Kickoff Checklist — invent.ai Delivery Framework</div>'
+    +(d.preKickoffCheckResults||[]).map(function(c){
+      var icon=c.status==='Met'?'✓':c.status==='Partial'?'◑':c.status==='Not Met'?'✕':'?';
+      var cls=c.status==='Met'?'var(--ok)':c.status==='Partial'?'var(--warn)':c.status==='Not Met'?'var(--danger)':'var(--t3)';
+      return'<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-weight:700;color:'+cls+';font-size:12px;flex-shrink:0;width:14px">'+icon+'</span>'
+        +'<div><div style="font-size:11px;font-weight:600;color:var(--t1)">'+c.requirement+'</div>'
+        +(c.note?'<div style="font-size:10px;color:var(--t3);margin-top:2px">'+c.note+'</div>':'')
+        +'</div></div>';
+    }).join('')+'</div>';
+
+  // Critical blockers
+  var blockerHtml=(d.criticalBlockers&&d.criticalBlockers.length)
+    ?'<div style="margin-bottom:14px"><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--danger);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(224,68,68,.2)">Critical Blockers</div>'
+    +d.criticalBlockers.map(function(b){
+      var pColor=b.priority==='Critical'?'var(--danger)':b.priority==='High'?'var(--warn)':'var(--purple)';
+      return'<div class="action-item" style="margin-bottom:8px">'
+        +'<div class="action-num" style="background:'+pColor+';font-size:9px">'+b.priority.substring(0,1)+'</div>'
+        +'<div><div class="action-title">'+b.blocker+'</div>'
+        +'<div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin:2px 0">Blocks: '+b.frameworkStage+'</div>'
+        +'<div class="action-desc">'+b.action+'</div></div></div>';
+    }).join('')+'</div>':'';
+
+  // Next steps
+  var nextHtml=(d.nextSteps&&d.nextSteps.length)
+    ?'<div><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Recommended Next Steps</div>'
+    +d.nextSteps.map(function(s,i){return'<div class="action-item" style="margin-bottom:6px"><div class="action-num">'+(i+1)+'</div><div class="action-desc">'+s+'</div></div>';}).join('')+'</div>':'';
+
+  document.getElementById('score-detail').innerHTML=checkHtml+blockerHtml+nextHtml;
 }
 
 // ── SIMILAR CLIENTS ──
@@ -1565,7 +1751,7 @@ async function runSimilarClients(){
   var pastClientsContext=PAST_CLIENTS.map(function(c){return c.name+' ('+c.industry+', solutions: '+c.solutions.join(',')+', '+c.stores+'): '+c.notes;}).join('\n');
   var prompt='You are a senior invent.ai delivery consultant. Based on the current engagement, identify which past clients are most similar and what lessons apply.\n\nCURRENT ENGAGEMENT:\n'+(clientName?'Client: '+clientName+'\n':'')+(industry?'Industry: '+industry+'\n':'')+'Solutions in scope: '+reqSolScope.join(', ')+'\n'+(reqNotes||briefNotes?'Context: '+(reqNotes||briefNotes).substring(0,500)+'\n':'')+'\nPAST CLIENTS IN JIRA:\n'+pastClientsContext+'\n\nReturn ONLY valid JSON:\n{"matchContext":"string","matches":[{"client":"string","industry":"string","solutions":["alloc"],"matchReason":"string","matchScore":85,"keyLesson":"string","watchOut":"string"}],"crossEngagementLearnings":["string"]}';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1594,14 +1780,23 @@ async function extractBrief(){
   if(!paste&&!uploadedText&&!bClient&&!bObj){alert('Please upload a file, paste notes, or fill in the manual fields.');return;}
   var btn=document.getElementById('extract-btn'),lbl=document.getElementById('extract-lbl'),spin=document.getElementById('extract-spin');
   btn.disabled=true;lbl.textContent='Extracting…';spin.style.display='block';
+
+  // Track sources used
+  briefSources=[];
+  if(uploadedText) briefSources.push('upload');
+  if(paste && paste.indexOf('Loading meeting summary')<0) briefSources.push(gmailImported?'gmail':'manual');
+  if(bClient&&!uploadedText&&!paste) briefSources.push('manual');
+
   var ctx=[uploadedText?'DOCUMENT:\n'+uploadedText.slice(0,8000):'',paste?'NOTES:\n'+paste:'',bClient?'Client: '+bClient:'',document.getElementById('b-industry').value?'Industry: '+document.getElementById('b-industry').value:'',document.getElementById('b-contact').value?'Contact: '+document.getElementById('b-contact').value:'',bObj?'Objectives: '+bObj:'',document.getElementById('b-constraints').value?'Constraints: '+document.getElementById('b-constraints').value:''].filter(Boolean).join('\n\n');
   var prompt='You are a senior delivery consultant at invent.ai (retail AI: Allocation, Store Replenishment, Transfers, DC Replenishment, Buy Optimisation, Assortment Planning, MFP).\nAnalyse this client discovery information and produce a structured Project Brief.\n'+ctx+'\nReturn ONLY valid JSON:\n{"clientName":"","industry":"","projectTitle":"","keyContact":"","executiveSummary":"","keyFacts":[{"label":"","value":""}],"objectives":[""],"challenges":[""],"constraints":[""],"recommendedSolutions":[""],"nextSteps":[""]}';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     briefData=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderBrief(briefData);
+    // Auto-populate requirements
+    autoRunRequirements(ctx, briefData.clientName||bClient);
   }catch(err){alert('Brief extraction failed: '+err.message);}
   finally{btn.disabled=false;lbl.textContent='✦ Extract & Generate Brief';spin.style.display='none';}
 }
@@ -1610,10 +1805,23 @@ function renderBrief(d){
   if(d.clientName){document.getElementById('b-client').value=d.clientName;document.getElementById('f-client').value=d.clientName;}
   if(d.industry)document.getElementById('b-industry').value=d.industry;
   if(d.keyContact)document.getElementById('b-contact').value=d.keyContact;
-  var listHtml=function(arr){return(arr||[]).map(function(x){return'<div class="blist-item">'+x+'</div>';}).join('');};
+
+  // Build source badge HTML
+  var srcHtml='';
+  (briefSources||[]).forEach(function(s){
+    if(s==='gmail') srcHtml+='<span class="src-badge src-gmail">📧 Gmail</span>';
+    else if(s==='upload') srcHtml+='<span class="src-badge src-upload">📄 Upload</span>';
+    else if(s==='manual') srcHtml+='<span class="src-badge src-manual">✏️ Manual</span>';
+  });
+  var srcLine=srcHtml?'<div style="margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)">Sources:</span>'+srcHtml+'</div>':'';
+
+  var listHtml=function(arr,src){return(arr||[]).map(function(x){return'<div class="blist-item">'+x+(src?'<span class="src-badge '+srcClass(src)+'">'+srcLabel(src)+'</span>':'')+'</div>';}).join('');};
   var kfHtml=(d.keyFacts||[]).map(function(f){return'<div class="kf-item"><div class="kf-lbl">'+f.label+'</div><div class="kf-val">'+f.value+'</div></div>';}).join('');
-  document.getElementById('brief-out').innerHTML='<div class="bsec"><div class="bsec-title">Overview</div><div class="bnarrative">'+(d.executiveSummary||'—')+'</div></div><div class="bsec"><div class="bsec-title">Key Facts</div><div class="kf-grid">'+kfHtml+'</div></div><div class="bsec"><div class="bsec-title">Objectives</div><div class="blist">'+listHtml(d.objectives)+'</div></div><div class="bsec"><div class="bsec-title">Challenges</div><div class="blist">'+listHtml(d.challenges)+'</div></div>'+(d.constraints&&d.constraints.length?'<div class="bsec"><div class="bsec-title">Constraints & Dates</div><div class="blist">'+listHtml(d.constraints)+'</div></div>':'')+'<div class="bsec"><div class="bsec-title">Recommended Solutions</div><div class="blist">'+listHtml(d.recommendedSolutions)+'</div></div><div class="bsec"><div class="bsec-title">Next Steps</div><div class="blist">'+listHtml(d.nextSteps)+'</div></div>';
+  var mainSrc=briefSources&&briefSources[0]||'manual';
+  document.getElementById('brief-out').innerHTML=srcLine+'<div class="bsec"><div class="bsec-title">Overview</div><div class="bnarrative">'+(d.executiveSummary||'—')+'</div></div><div class="bsec"><div class="bsec-title">Key Facts</div><div class="kf-grid">'+kfHtml+'</div></div><div class="bsec"><div class="bsec-title">Objectives</div><div class="blist">'+listHtml(d.objectives,mainSrc)+'</div></div><div class="bsec"><div class="bsec-title">Challenges</div><div class="blist">'+listHtml(d.challenges,mainSrc)+'</div></div>'+(d.constraints&&d.constraints.length?'<div class="bsec"><div class="bsec-title">Constraints & Dates</div><div class="blist">'+listHtml(d.constraints,mainSrc)+'</div></div>':'')+'<div class="bsec"><div class="bsec-title">Recommended Solutions</div><div class="blist">'+listHtml(d.recommendedSolutions,mainSrc)+'</div></div><div class="bsec"><div class="bsec-title">Next Steps</div><div class="blist">'+listHtml(d.nextSteps,mainSrc)+'</div></div>';
 }
+function srcClass(s){return s==='gmail'?'src-gmail':s==='upload'?'src-upload':s==='manual'?'src-manual':s==='enrich'?'src-enrich':'src-brief';}
+function srcLabel(s){return s==='gmail'?'📧 Gmail':s==='upload'?'📄 Upload':s==='manual'?'✏️ Manual':s==='enrich'?'✦ Enrich':'✦ Brief';}
 function syncManual(){var c=document.getElementById('b-client').value;if(c)document.getElementById('f-client').value=c;}
 function copyBrief(){
   if(!briefData)return;
@@ -1646,7 +1854,7 @@ async function fetchMeetingEmails(context,clientName){
   spin.style.display='block';btn.disabled=true;
   var searchQuery='(subject:"meeting summary" OR subject:"meeting recap" OR subject:"meeting notes" OR subject:"call summary" OR subject:"call recap") "'+clientName+'" newer_than:180d';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Search Gmail for meeting summary and recap emails related to client "'+clientName+'". Use query: '+searchQuery+'. Return ONLY a JSON array: [{"messageId":"...","subject":"...","date":"...","snippet":"...","from":"..."}]'}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Search Gmail for meeting summary and recap emails related to client "'+clientName+'". Use query: '+searchQuery+'. Return ONLY a JSON array: [{"messageId":"...","subject":"...","date":"...","snippet":"...","from":"..."}]'}]})});
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var messages=[];try{var match=raw.replace(/```json|```/g,'').trim().match(/\[[\s\S]*\]/);if(match)messages=JSON.parse(match[0]);}catch(e){}
@@ -1666,11 +1874,12 @@ function renderEmailList(context,messages,clientName){
   }).join('');
 }
 async function importEmail(context,messageId,el){
+  gmailImported=true;
   el.parentNode.querySelectorAll('.gmail-email-item').forEach(function(i){i.style.background='';});el.style.background='var(--purple-subtle)';
   var targetTextarea=context==='req'?document.getElementById('req-notes'):document.getElementById('paste-input');
   targetTextarea.value='Loading meeting summary…';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Read Gmail message ID: '+messageId+'. Return only the plain text meeting summary content — preserve structure including Quick Recap, Action Items, Next Steps. Strip HTML. Just the content as plain text.'}]})});
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Read Gmail message ID: '+messageId+'. Return only the plain text meeting summary content — preserve structure including Quick Recap, Action Items, Next Steps. Strip HTML. Just the content as plain text.'}]})});
     var data=await res.json();
     var textBlock=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
     targetTextarea.value=textBlock&&textBlock.length>50?textBlock:'Could not load full summary — please paste manually.';
@@ -1678,7 +1887,279 @@ async function importEmail(context,messageId,el){
   }catch(err){targetTextarea.value='Could not load email. Please paste manually.';}
 }
 
-// ── EXPORT ──
+// ── ENRICH CLIENT (V6) ──
+async function enrichClient(){
+  var clientName=document.getElementById('b-client').value.trim()||document.getElementById('f-client').value.trim()||document.getElementById('req-client').value.trim();
+  var noClient=document.getElementById('enrich-no-client');
+  if(!clientName){noClient.style.display='block';setTimeout(function(){noClient.style.display='none';},3000);return;}
+  noClient.style.display='none';
+
+  var btn=document.getElementById('enrich-btn'),lbl=document.getElementById('enrich-lbl'),spin=document.getElementById('enrich-spin');
+  var log=document.getElementById('enrich-log');
+  btn.disabled=true;lbl.textContent='Enriching…';spin.style.display='block';
+  log.style.display='block';log.innerHTML='';
+
+  function addLog(msg,cls){
+    var line=document.createElement('div');line.className='enrich-log-line '+(cls||'');
+    line.innerHTML='<span class="enrich-log-dot"></span><span>'+msg+'</span>';
+    log.appendChild(line);log.scrollTop=log.scrollHeight;
+  }
+
+  var MCP_SERVERS=[
+    {type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'},
+    {type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'},
+    {type:'url',url:'https://mcp.slack.com/mcp',name:'Slack'},
+    {type:'url',url:'https://gdrive.mcp.claude.com/mcp',name:'GoogleDrive'}
+  ];
+
+  var results={gmail:'',slack:'',confluence:'',jira:'',drive:''};
+
+  // ── Helper: call /api/claude with MCP ──
+  async function mcpCall(servers,userMsg,maxTok){
+    var body={model:'claude-sonnet-4-20250514',max_tokens:maxTok||1500,mcp_servers:servers,messages:[{role:'user',content:userMsg}]};
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var data=await res.json();
+    return(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
+  }
+
+  // ── 1. Gmail ──
+  addLog('Searching Gmail for meeting summaries…','working');
+  try{
+    var gmailQuery='(subject:"meeting summary" OR subject:"meeting recap" OR subject:"call summary" OR subject:"call recap" OR subject:"'+clientName+'") "'+clientName+'" newer_than:180d';
+    var gmailRaw=await mcpCall(
+      [{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],
+      'Search Gmail for all emails related to client "'+clientName+'" using query: '+gmailQuery+'. For each email found, read the full message body. Then synthesise the key information into a plain-text summary covering: project context, objectives, challenges, constraints, next steps, key contacts. Aim for 200-400 words. Start the output directly with the summary, no preamble.',
+      2000
+    );
+    if(gmailRaw&&gmailRaw.length>80){results.gmail=gmailRaw;addLog('Gmail — '+gmailRaw.length+' chars of context','done');}
+    else{addLog('Gmail — no relevant emails found','warn');}
+  }catch(e){addLog('Gmail — error: '+e.message,'warn');}
+
+  // ── 2. Slack ──
+  addLog('Searching Slack for client mentions…','working');
+  try{
+    var slackRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.slack.com/mcp',name:'Slack'}],
+      'Search Slack for all messages and threads mentioning "'+clientName+'". Include DMs and public channels. Summarise the key discussion points, decisions, action items, and any technical or commercial context about "'+clientName+'" in plain text (150-300 words). Start directly with the summary.',
+      1500
+    );
+    if(slackRaw&&slackRaw.length>80){results.slack=slackRaw;addLog('Slack — '+slackRaw.length+' chars of context','done');}
+    else{addLog('Slack — no relevant messages found','warn');}
+  }catch(e){addLog('Slack — error: '+e.message,'warn');}
+
+  // ── 3. Confluence ──
+  addLog('Searching Confluence for documentation…','working');
+  try{
+    var confRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+      'Search Confluence for all pages mentioning "'+clientName+'". Read the most relevant pages. Summarise the key findings: project scope, technical requirements, integration details, constraints, open questions (200-400 words). Start directly with the summary.',
+      2000
+    );
+    if(confRaw&&confRaw.length>80){results.confluence=confRaw;addLog('Confluence — '+confRaw.length+' chars of context','done');}
+    else{addLog('Confluence — no relevant pages found','warn');}
+  }catch(e){addLog('Confluence — error: '+e.message,'warn');}
+
+  // ── 4. Jira ──
+  addLog('Searching Jira for issues and epics…','working');
+  try{
+    var jiraRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+      'Search Jira for all issues, epics, and tickets related to "'+clientName+'". Summarise: active epics, open issues, solution types in scope, any delivery notes, risks or blockers (150-300 words). Start directly with the summary.',
+      1500
+    );
+    if(jiraRaw&&jiraRaw.length>80){results.jira=jiraRaw;addLog('Jira — '+jiraRaw.length+' chars of context','done');}
+    else{addLog('Jira — no relevant issues found','warn');}
+  }catch(e){addLog('Jira — error: '+e.message,'warn');}
+
+  // ── 5. Google Drive ──
+  addLog('Searching Google Drive for documents…','working');
+  try{
+    var driveRaw=await mcpCall(
+      [{type:'url',url:'https://gdrive.mcp.claude.com/mcp',name:'GoogleDrive'}],
+      'Search Google Drive for all files and documents related to "'+clientName+'". Read the most relevant files. Summarise: key project details, SOW or scoping information, data specs, integration requirements (150-300 words). Start directly with the summary.',
+      1500
+    );
+    if(driveRaw&&driveRaw.length>80){results.drive=driveRaw;addLog('Drive — '+driveRaw.length+' chars of context','done');}
+    else{addLog('Drive — no relevant files found','warn');}
+  }catch(e){addLog('Drive — error: '+e.message,'warn');}
+
+  // ── Check we got something ──
+  var allContext=[results.gmail,results.slack,results.confluence,results.jira,results.drive].filter(Boolean).join('\n\n');
+  if(!allContext){
+    addLog('No data found across any source. Check connections in claude.ai Settings.','warn');
+    btn.disabled=false;lbl.textContent='⚡ Enrich Client';spin.style.display='none';
+    return;
+  }
+
+  // ── 6. Synthesise into Brief JSON ──
+  addLog('Synthesising into Project Brief…','working');
+  var sources=[];
+  if(results.gmail)sources.push('Gmail');if(results.slack)sources.push('Slack');
+  if(results.confluence)sources.push('Confluence');if(results.jira)sources.push('Jira');
+  if(results.drive)sources.push('Drive');
+
+  var synthPrompt='You are a senior delivery consultant at invent.ai (retail AI: Allocation, Store Replenishment, Transfers, DC Replenishment, Buy Optimisation, Assortment Planning, MFP).\n\nSynthesize the following intelligence gathered from '+sources.join(', ')+' about client "'+clientName+'" into a structured Project Brief.\n\n'+(results.gmail?'=== GMAIL CONTEXT ===\n'+results.gmail+'\n\n':'')+(results.slack?'=== SLACK CONTEXT ===\n'+results.slack+'\n\n':'')+(results.confluence?'=== CONFLUENCE CONTEXT ===\n'+results.confluence+'\n\n':'')+(results.jira?'=== JIRA CONTEXT ===\n'+results.jira+'\n\n':'')+(results.drive?'=== DRIVE CONTEXT ===\n'+results.drive+'\n\n':'')+'\nReturn ONLY valid JSON:\n{"clientName":"","industry":"","projectTitle":"","keyContact":"","executiveSummary":"","keyFacts":[{"label":"","value":""}],"objectives":[""],"challenges":[""],"constraints":[""],"recommendedSolutions":[""],"nextSteps":[""],"enrichedNotes":"combined plain-text notes suitable for pasting into Requirements Review (300-500 words)"}';
+
+  try{
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:synthPrompt}]})});
+    var data=await res.json();
+    var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/)[0]);
+
+    // Populate Brief fields
+    if(parsed.clientName){document.getElementById('b-client').value=parsed.clientName;document.getElementById('f-client').value=parsed.clientName;}
+    if(parsed.industry)document.getElementById('b-industry').value=parsed.industry;
+    if(parsed.keyContact)document.getElementById('b-contact').value=parsed.keyContact;
+    if(parsed.executiveSummary&&!document.getElementById('b-objectives').value)document.getElementById('b-objectives').value=parsed.objectives?parsed.objectives.join('\n'):'';
+    if(parsed.constraints&&!document.getElementById('b-constraints').value)document.getElementById('b-constraints').value=parsed.constraints.join('\n');
+
+    // Paste enriched notes into the paste area
+    var pasteEl=document.getElementById('paste-input');
+    if(parsed.enrichedNotes)pasteEl.value=parsed.enrichedNotes;
+
+    // Also populate Requirements notes
+    var reqEl=document.getElementById('req-notes');
+    if(parsed.enrichedNotes&&!reqEl.value)reqEl.value=parsed.enrichedNotes;
+
+    // Mark sources
+    briefSources=['enrich'].concat(sources.map(function(s){return s.toLowerCase();}));
+    gmailImported=true;
+
+    // Render brief
+    briefData=parsed;
+    // Build source HTML for enrich
+    var enrichSrcHtml='<span class="src-badge src-enrich">✦ Enrich ('+sources.join(', ')+')</span>';
+    var origRenderBrief=renderBrief;
+    renderBrief(parsed);
+    // Patch the source line after render
+    var briefOut=document.getElementById('brief-out');
+    var srcDiv=briefOut.querySelector('div[style*="margin-bottom:14px"]');
+    if(!srcDiv){briefOut.insertAdjacentHTML('afterbegin','<div style="margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)">Sources:</span>'+enrichSrcHtml+'</div>');}
+    else{srcDiv.innerHTML='<span style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)">Sources:</span>'+enrichSrcHtml;}
+
+    addLog('Brief populated from '+sources.join(' + ')+' ✓','done');
+
+    // ── 7. Fetch Confluence capability pages for solutions in scope ──
+    addLog('Fetching Confluence capability pages for solutions in scope…','working');
+    var confluenceCapabilities='';
+    try{
+      var solsInScope=reqSolScope.filter(function(id){return CONFLUENCE_KB[id]&&CONFLUENCE_KB[id].confluenceUrl;});
+      var confPagePromises=solsInScope.map(async function(id){
+        var kb=CONFLUENCE_KB[id];
+        try{
+          var pageRaw=await mcpCall(
+            [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+            'Fetch the Confluence page at URL: '+kb.confluenceUrl+'. Return only the plain text content of the page — capability description, features list, supported use cases, integration requirements, and any listed limitations. No HTML.',
+            1500
+          );
+          return'### '+kb.name+' (from Confluence)\n'+(pageRaw&&pageRaw.length>50?pageRaw.substring(0,1200):kb.description);
+        }catch(e){
+          return'### '+kb.name+'\n'+kb.description;
+        }
+      });
+      var pageTexts=await Promise.all(confPagePromises);
+      confluenceCapabilities=pageTexts.join('\n\n');
+      addLog('Confluence capability pages loaded for '+solsInScope.length+' solutions ✓','done');
+    }catch(e){
+      addLog('Confluence capability fetch failed, using local KB fallback','warn');
+      confluenceCapabilities=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
+    }
+
+    // ── 8. Run Confluence-grounded requirements analysis ──
+    addLog('Comparing client requirements against Confluence capabilities…','working');
+    var enrichCtx=allContext.substring(0,5000);
+    var enrichedClientName=parsed.clientName||clientName;
+    document.getElementById('req-client').value=enrichedClientName;
+    document.getElementById('req-notes').value=enrichCtx;
+
+    var banner=document.getElementById('req-auto-banner');
+    if(banner)banner.style.display='flex';
+
+    var reqPrompt='You are a senior pre-sales solution consultant at invent.ai.\n\n'
+      +'Compare the CLIENT DISCOVERY NOTES against the INVENT.AI CAPABILITIES sourced directly from Confluence.\n'
+      +'Classify every identified client requirement as: Core (directly supported), Advanced (supported with configuration/effort), Gap (not supported or out of scope), or Integration (requires an external system connection).\n\n'
+      +(enrichedClientName?'CLIENT: '+enrichedClientName+'\n\n':'')
+      +'CLIENT DISCOVERY NOTES (from Gmail, Slack, Jira, Drive, Confluence):\n'+enrichCtx+'\n\n'
+      +'INVENT.AI CAPABILITIES (sourced from Confluence):\n'+confluenceCapabilities+'\n\n'
+      +'Return ONLY valid JSON, no markdown:\n'
+      +'{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
+
+    try{
+      var reqRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:reqPrompt}]})});
+      var reqData=await reqRes.json();
+      var reqRaw=(reqData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+      var reqResult=JSON.parse(reqRaw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/)[0]);
+      renderReqResults(reqResult,enrichedClientName,'enrich');
+      addLog('Requirements populated — Core: '+((reqResult.core||[]).length)+', Gaps: '+((reqResult.gaps||[]).length)+', Integrations: '+((reqResult.integrations||[]).length)+' ✓','done');
+
+      // Auto-score against delivery framework
+      addLog('Running Readiness Scorecard against Delivery Framework…','working');
+      try{
+        await runScorecard();
+        addLog('Readiness Score calculated ✓','done');
+      }catch(e){addLog('Scorecard skipped: '+e.message,'warn');}
+    }catch(err){
+      addLog('Requirements analysis failed: '+err.message+' — try Requirements tab manually','warn');
+    }finally{
+      if(banner)banner.style.display='none';
+    }
+
+    // ── 9. Enrich Discovery Questions with client context ──
+    addLog('Pre-filling Discovery Q answers from client context…','working');
+    try{
+      var dqPrompt='You are a senior invent.ai delivery consultant.\n\nBased on the following client intelligence, pre-fill answers to the discovery questionnaire sections below. Only fill answers where the context clearly provides an answer — leave blank if genuinely unknown.\n\nCLIENT: '+enrichedClientName+'\n\nCLIENT CONTEXT (from Gmail, Slack, Confluence, Jira, Drive):\n'+allContext.substring(0,4000)+'\n\nFor each discovery question below, extract any relevant answer from the client context.\n\nReturn ONLY valid JSON as an array:\n[{"key":"general_0","answer":"string or empty"},{"key":"alloc_0","answer":"string or empty"},...]\n\nQUESTION KEYS TO ANSWER:\n'+
+        Object.keys(DQ_BANK).map(function(secId){
+          return (DQ_BANK[secId].questions||[]).map(function(q,qi){
+            return '{"key":"'+secId+'_'+qi+'","question":"'+q.q.replace(/"/g,"'")+'"}'
+          }).join('\n');
+        }).join('\n');
+
+      var dqRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:dqPrompt}]})});
+      var dqData=await dqRes.json();
+      var dqRaw=(dqData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+      var dqMatch=dqRaw.replace(/```json|```/g,'').trim().match(/\[[\s\S]*\]/);
+      if(dqMatch){
+        var dqAnswersArr=JSON.parse(dqMatch[0]);
+        var filled=0;
+        dqAnswersArr.forEach(function(item){
+          if(item.answer&&item.answer.trim()&&item.answer.trim().length>3){
+            if(!dqAnswers[item.key])dqAnswers[item.key]={answer:'',status:'unanswered'};
+            dqAnswers[item.key].answer=item.answer.trim();
+            dqAnswers[item.key].status='answered';
+            filled++;
+          }
+        });
+        addLog('Discovery Q pre-filled: '+filled+' answers extracted ✓','done');
+      }
+    }catch(e){addLog('Discovery Q pre-fill skipped: '+e.message,'warn');}
+
+    // ── 10. Enrich Similar Clients with live Jira context ──
+    addLog('Matching against past clients via Jira…','working');
+    try{
+      var jiraClientContext=results.jira||'';
+      var pastClientsContext=PAST_CLIENTS.map(function(c){return c.name+' ('+c.industry+', solutions: '+c.solutions.join(',')+', '+c.stores+'): '+c.notes;}).join('\n');
+      var simPrompt='You are a senior invent.ai delivery consultant.\n\nMatch the current engagement against our past client portfolio.\n\nCURRENT ENGAGEMENT:\nClient: '+enrichedClientName+'\nIndustry: '+(document.getElementById('b-industry').value.trim()||'Unknown')+'\nSolutions in scope: '+reqSolScope.join(', ')+'\nContext: '+allContext.substring(0,600)+'\n'+(jiraClientContext?'Live Jira context: '+jiraClientContext.substring(0,400)+'\n':'')+'\nPAST CLIENTS IN JIRA:\n'+pastClientsContext+'\n\nReturn ONLY valid JSON:\n{"matchContext":"string","matches":[{"client":"string","industry":"string","solutions":["alloc"],"matchReason":"string","matchScore":85,"keyLesson":"string","watchOut":"string"}],"crossEngagementLearnings":["string"]}';
+
+      var simRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:simPrompt}]})});
+      var simData=await simRes.json();
+      var simRaw=(simData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+      var simMatch=simRaw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+      if(simMatch){
+        var simResult=JSON.parse(simMatch[0]);
+        renderSimilarClients(simResult);
+        addLog('Similar clients matched: '+(simResult.matches||[]).length+' found ✓','done');
+      }
+    }catch(e){addLog('Similar clients skipped: '+e.message,'warn');}
+
+    // Switch to brief
+    switchView('brief');
+
+  }catch(err){addLog('Synthesis failed: '+err.message,'warn');}
+
+  btn.disabled=false;lbl.textContent='⚡ Re-Enrich';spin.style.display='none';
+}
+
+
 function generateExport(){
   var lines=[],clientName=document.getElementById('b-client').value.trim()||'Client';
   lines.push('═══════════════════════════════════════');
@@ -1945,6 +2426,8 @@ function newClient(){
   document.getElementById('score-empty').style.display='flex';
   document.getElementById('score-results').style.display='none';
   saData=null;
+  briefSources=[];
+  gmailImported=false;
   switchView('brief');
 }
 
