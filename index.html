@@ -470,6 +470,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px
     <div class="gate-subtitle">Quantum Accelerator</div>
     <label class="gate-label" for="gate-pw">Team Passphrase</label>
     <input class="gate-input" type="password" id="gate-pw" placeholder="••••••••••" onkeydown="if(event.key==='Enter')checkGate()"/>
+    <label class="gate-label" for="gate-apikey" style="margin-top:10px">Anthropic API Key <span style="color:var(--t4);font-size:9px;text-transform:none;letter-spacing:0">(required for MCP enrichment)</span></label>
+    <input class="gate-input" type="password" id="gate-apikey" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')checkGate()" style="letter-spacing:0"/>
     <button class="gate-btn" onclick="checkGate()">Enter →</button>
     <div class="gate-error" id="gate-error">Incorrect passphrase. Try again.</div>
     <div class="gate-hint">Access restricted to invent.ai team members.<br>Contact your team lead for the passphrase.</div>
@@ -1384,7 +1386,7 @@ async function autoRunRequirements(ctx, clientName){
   var scopedKB=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
   var prompt='You are a senior pre-sales solution consultant at invent.ai.\nAnalyse the client discovery notes and classify requirements against invent.ai capabilities.\n'+(clientName?'CLIENT: '+clientName+'\n\n':'')+'DISCOVERY NOTES:\n'+ctx+'\n\nINVENT.AI CAPABILITIES IN SCOPE:\n'+scopedKB+'\n\nReturn ONLY valid JSON, no markdown:\n{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -1401,7 +1403,7 @@ async function runRequirementsReview(){
   var scopedKB=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
   var prompt='You are a senior pre-sales solution consultant at invent.ai.\nAnalyse the client discovery notes and classify requirements against invent.ai capabilities.\n'+(client?'CLIENT: '+client+'\n\n':'')+'DISCOVERY NOTES:\n'+notes+'\n\nINVENT.AI CAPABILITIES IN SCOPE:\n'+scopedKB+'\n\nReturn ONLY valid JSON, no markdown:\n{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -1431,7 +1433,7 @@ async function suggestSolutions(){
   var kbContext=Object.entries(CONFLUENCE_KB).map(function(e){var id=e[0],sol=e[1];return'### '+sol.name+' ('+sol.confluenceUrl+')\nSignals: '+sol.signals.join(', ')+'\n'+sol.description;}).join('\n\n');
   var prompt='You are a senior invent.ai pre-sales consultant. Based on the client discovery notes, recommend which invent.ai solutions should be in scope.\n\nConfluence knowledge:\n'+kbContext+'\n\nCLIENT NOTES:\n'+notes+'\n\nReturn ONLY valid JSON:\n{"recommended":["alloc","sr","tr","dc","bo","as","mfp"],"reasoning":{"alloc":"string","sr":"string","tr":"string","dc":"string","bo":"string","as":"string","mfp":"string"},"summary":"string"}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1555,7 +1557,7 @@ async function runSAReview(){
   var scopedSolutions=reqSolScope.map(function(id){return SOL_KNOWLEDGE[id]?SOL_KNOWLEDGE[id].name:id;}).join(', ');
   var prompt='You are a senior Solution Architect at invent.ai. Conduct a proactive risk assessment for this engagement.\n\n'+(clientName?'Client: '+clientName+'\n':'')+(industry?'Industry: '+industry+'\n':'')+(objectives?'Objectives: '+objectives+'\n':'')+(constraints?'Constraints: '+constraints+'\n':'')+(briefNotes?'Brief: '+briefNotes+'\n':'')+(reqNotes?'Discovery Notes: '+reqNotes+'\n':'')+'Solutions in Scope: '+scopedSolutions+'\n'+(coreItems?'Core requirements: '+coreItems+'\n':'')+(advItems?'Advanced: '+advItems+'\n':'')+(gapItems?'Gaps identified: '+gapItems+'\n':'')+(intItems?'Integrations: '+intItems+'\n':'')+'\nReturn ONLY valid JSON:\n{"riskSummary":"string","risks":[{"id":"R001","category":"DATA_GAP|OUT_OF_SCOPE|CAPABILITY_GAP|INTEGRATION_RISK|DELIVERY_RISK|DATA_QUALITY","severity":"Critical|High|Medium|Low","title":"string","description":"string","impact":"string","mitigation":"string","owner":"SA|Data Team|Client|PM|Product","timing":"Pre-Discovery|During Discovery|Pre-Go-Live|Ongoing"}],"preDeliveryActions":[{"priority":1,"title":"string","description":"string","owner":"string","linkedRisks":["R001"]}]}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1657,7 +1659,7 @@ async function runScorecard(){
   var prompt=frameworkContext+'\n\n---\n\n'+clientContext+'\n\n---\n\nYou are a senior invent.ai Delivery Manager assessing this client\'s readiness for onboarding against the invent.ai Delivery Framework gold standard above.\n\nSCORING RULES (score 0–100 overall):\n- 80–100: Ready for Kickoff — all pre-kickoff requirements met, data available, scope clear, stakeholders confirmed\n- 60–79: Proceed with Caution — material gaps exist but engagement can start with mitigation plan\n- 0–59: Not Ready for Onboarding — critical blockers unmet, return to pre-sales\n\nScore each dimension 0–100. Weighted overall score = weighted average.\n\nDIMENSIONS (assess each against the framework):\n1. Data Readiness (weight 25%) — historical data accessible, feeds agreed, pipeline feasible\n2. Scope & Requirements Clarity (weight 20%) — SOW clarity, solution scope confirmed, requirements documented\n3. Stakeholder & Governance (weight 15%) — exec sponsor identified, project champion confirmed, governance model agreed\n4. Technical & Integration Readiness (weight 20%) — ERP/source system access, IT environment, integration approach understood\n5. Timeline Feasibility (weight 10%) — go-live date realistic against framework stage durations\n6. Change Management Readiness (weight 10%) — client awareness of process change, training plan feasibility\n\nFor each blocker identified, map it to the framework stage it would block (e.g. "Blocks Stage 2: Data Collection").\n\nReturn ONLY valid JSON:\n{"overallScore":72,"overallVerdict":"Ready for Kickoff|Proceed with Caution|Not Ready for Onboarding","overallNarrative":"string (2-3 sentences referencing the framework)","frameworkBand":{"min":60,"max":79,"color":"#e6a817"},"preKickoffCheckResults":[{"requirement":"string","status":"Met|Partial|Not Met|Unknown","note":"string"}],"dimensions":[{"label":"Data Readiness","weight":25,"score":65,"color":"#BE4FDB","description":"string","blockedStage":"Stage 2: Data Collection","recommendation":"string"},{"label":"Scope & Requirements Clarity","weight":20,"score":80,"color":"#D68FE0","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Stakeholder & Governance","weight":15,"score":70,"color":"#A8D8E8","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Technical & Integration Readiness","weight":20,"score":60,"color":"#7ab8cc","description":"string","blockedStage":"Stage 1: Project Initiation","recommendation":"string"},{"label":"Timeline Feasibility","weight":10,"score":75,"color":"#8aaa00","description":"string","blockedStage":null,"recommendation":"string"},{"label":"Change Management Readiness","weight":10,"score":55,"color":"#C8E840","description":"string","blockedStage":"Stage 7: Go-Live","recommendation":"string"}],"criticalBlockers":[{"blocker":"string","frameworkStage":"string","priority":"Critical|High|Medium","action":"string"}],"nextSteps":["string"]}';
 
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1751,7 +1753,7 @@ async function runSimilarClients(){
   var pastClientsContext=PAST_CLIENTS.map(function(c){return c.name+' ('+c.industry+', solutions: '+c.solutions.join(',')+', '+c.stores+'): '+c.notes;}).join('\n');
   var prompt='You are a senior invent.ai delivery consultant. Based on the current engagement, identify which past clients are most similar and what lessons apply.\n\nCURRENT ENGAGEMENT:\n'+(clientName?'Client: '+clientName+'\n':'')+(industry?'Industry: '+industry+'\n':'')+'Solutions in scope: '+reqSolScope.join(', ')+'\n'+(reqNotes||briefNotes?'Context: '+(reqNotes||briefNotes).substring(0,500)+'\n':'')+'\nPAST CLIENTS IN JIRA:\n'+pastClientsContext+'\n\nReturn ONLY valid JSON:\n{"matchContext":"string","matches":[{"client":"string","industry":"string","solutions":["alloc"],"matchReason":"string","matchScore":85,"keyLesson":"string","watchOut":"string"}],"crossEngagementLearnings":["string"]}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var match=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1790,7 +1792,7 @@ async function extractBrief(){
   var ctx=[uploadedText?'DOCUMENT:\n'+uploadedText.slice(0,8000):'',paste?'NOTES:\n'+paste:'',bClient?'Client: '+bClient:'',document.getElementById('b-industry').value?'Industry: '+document.getElementById('b-industry').value:'',document.getElementById('b-contact').value?'Contact: '+document.getElementById('b-contact').value:'',bObj?'Objectives: '+bObj:'',document.getElementById('b-constraints').value?'Constraints: '+document.getElementById('b-constraints').value:''].filter(Boolean).join('\n\n');
   var prompt='You are a senior delivery consultant at invent.ai (retail AI: Allocation, Store Replenishment, Transfers, DC Replenishment, Buy Optimisation, Assortment Planning, MFP).\nAnalyse this client discovery information and produce a structured Project Brief.\n'+ctx+'\nReturn ONLY valid JSON:\n{"clientName":"","industry":"","projectTitle":"","keyContact":"","executiveSummary":"","keyFacts":[{"label":"","value":""}],"objectives":[""],"challenges":[""],"constraints":[""],"recommendedSolutions":[""],"nextSteps":[""]}';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     briefData=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -1854,7 +1856,7 @@ async function fetchMeetingEmails(context,clientName){
   spin.style.display='block';btn.disabled=true;
   var searchQuery='(subject:"meeting summary" OR subject:"meeting recap" OR subject:"meeting notes" OR subject:"call summary" OR subject:"call recap") "'+clientName+'" newer_than:180d';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Search Gmail for meeting summary and recap emails related to client "'+clientName+'". Use query: '+searchQuery+'. Return ONLY a JSON array: [{"messageId":"...","subject":"...","date":"...","snippet":"...","from":"..."}]'}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:1000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Search Gmail for meeting summary and recap emails related to client "'+clientName+'". Use query: '+searchQuery+'. Return ONLY a JSON array: [{"messageId":"...","subject":"...","date":"...","snippet":"...","from":"..."}]'}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var messages=[];try{var match=raw.replace(/```json|```/g,'').trim().match(/\[[\s\S]*\]/);if(match)messages=JSON.parse(match[0]);}catch(e){}
@@ -1879,7 +1881,7 @@ async function importEmail(context,messageId,el){
   var targetTextarea=context==='req'?document.getElementById('req-notes'):document.getElementById('paste-input');
   targetTextarea.value='Loading meeting summary…';
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Read Gmail message ID: '+messageId+'. Return only the plain text meeting summary content — preserve structure including Quick Recap, Action Items, Next Steps. Strip HTML. Just the content as plain text.'}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2000,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],messages:[{role:'user',content:'Read Gmail message ID: '+messageId+'. Return only the plain text meeting summary content — preserve structure including Quick Recap, Action Items, Next Steps. Strip HTML. Just the content as plain text.'}]});}};
     var data=await res.json();
     var textBlock=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
     targetTextarea.value=textBlock&&textBlock.length>50?textBlock:'Could not load full summary — please paste manually.';
@@ -1914,11 +1916,10 @@ async function enrichClient(){
 
   var results={gmail:'',slack:'',confluence:'',jira:'',drive:''};
 
-  // ── Helper: call /api/claude with MCP ──
+  // ── Helper: call Anthropic with MCP ──
   async function mcpCall(servers,userMsg,maxTok){
     var body={model:'claude-sonnet-4-20250514',max_tokens:maxTok||1500,mcp_servers:servers,messages:[{role:'user',content:userMsg}]};
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var data=await res.json();
+    var data=await claudeFetch(body);
     return(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
   }
 
@@ -2001,7 +2002,7 @@ async function enrichClient(){
   var synthPrompt='You are a senior delivery consultant at invent.ai (retail AI: Allocation, Store Replenishment, Transfers, DC Replenishment, Buy Optimisation, Assortment Planning, MFP).\n\nSynthesize the following intelligence gathered from '+sources.join(', ')+' about client "'+clientName+'" into a structured Project Brief.\n\n'+(results.gmail?'=== GMAIL CONTEXT ===\n'+results.gmail+'\n\n':'')+(results.slack?'=== SLACK CONTEXT ===\n'+results.slack+'\n\n':'')+(results.confluence?'=== CONFLUENCE CONTEXT ===\n'+results.confluence+'\n\n':'')+(results.jira?'=== JIRA CONTEXT ===\n'+results.jira+'\n\n':'')+(results.drive?'=== DRIVE CONTEXT ===\n'+results.drive+'\n\n':'')+'\nReturn ONLY valid JSON:\n{"clientName":"","industry":"","projectTitle":"","keyContact":"","executiveSummary":"","keyFacts":[{"label":"","value":""}],"objectives":[""],"challenges":[""],"constraints":[""],"recommendedSolutions":[""],"nextSteps":[""],"enrichedNotes":"combined plain-text notes suitable for pasting into Requirements Review (300-500 words)"}';
 
   try{
-    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:synthPrompt}]})});
+    var res={json:async function(){return claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:synthPrompt}]});}};
     var data=await res.json();
     var raw=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
     var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/)[0]);
@@ -2085,8 +2086,7 @@ async function enrichClient(){
       +'{"clientSummary":"string","core":[{"requirement":"string","solution":"string"}],"advanced":[{"requirement":"string","solution":"string","note":"string"}],"gaps":[{"requirement":"string","note":"string"}],"integrations":[{"system":"string","type":"string","priority":"High/Medium/Low"}],"recommendedSolutions":[{"solution":"string","rationale":"string"}],"consultantNote":"string"}';
 
     try{
-      var reqRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:reqPrompt}]})});
-      var reqData=await reqRes.json();
+      var reqData=await claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:reqPrompt}]});
       var reqRaw=(reqData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
       var reqResult=JSON.parse(reqRaw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/)[0]);
       renderReqResults(reqResult,enrichedClientName,'enrich');
@@ -2114,8 +2114,7 @@ async function enrichClient(){
           }).join('\n');
         }).join('\n');
 
-      var dqRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:dqPrompt}]})});
-      var dqData=await dqRes.json();
+      var dqData=await claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:dqPrompt}]});
       var dqRaw=(dqData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
       var dqMatch=dqRaw.replace(/```json|```/g,'').trim().match(/\[[\s\S]*\]/);
       if(dqMatch){
@@ -2140,8 +2139,7 @@ async function enrichClient(){
       var pastClientsContext=PAST_CLIENTS.map(function(c){return c.name+' ('+c.industry+', solutions: '+c.solutions.join(',')+', '+c.stores+'): '+c.notes;}).join('\n');
       var simPrompt='You are a senior invent.ai delivery consultant.\n\nMatch the current engagement against our past client portfolio.\n\nCURRENT ENGAGEMENT:\nClient: '+enrichedClientName+'\nIndustry: '+(document.getElementById('b-industry').value.trim()||'Unknown')+'\nSolutions in scope: '+reqSolScope.join(', ')+'\nContext: '+allContext.substring(0,600)+'\n'+(jiraClientContext?'Live Jira context: '+jiraClientContext.substring(0,400)+'\n':'')+'\nPAST CLIENTS IN JIRA:\n'+pastClientsContext+'\n\nReturn ONLY valid JSON:\n{"matchContext":"string","matches":[{"client":"string","industry":"string","solutions":["alloc"],"matchReason":"string","matchScore":85,"keyLesson":"string","watchOut":"string"}],"crossEngagementLearnings":["string"]}';
 
-      var simRes=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:simPrompt}]})});
-      var simData=await simRes.json();
+      var simData=await claudeFetch({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:simPrompt}]});
       var simRaw=(simData.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
       var simMatch=simRaw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
       if(simMatch){
@@ -2443,9 +2441,11 @@ var PASSPHRASE='quantum2026';
 
 function checkGate(){
   var input=document.getElementById('gate-pw').value;
+  var apiKey=document.getElementById('gate-apikey').value.trim();
   var err=document.getElementById('gate-error');
   if(input===PASSPHRASE){
     sessionStorage.setItem('qa-auth','1');
+    if(apiKey)sessionStorage.setItem('qa-apikey',apiKey);
     document.getElementById('gate').style.display='none';
     document.getElementById('main-app').style.display='block';
     err.style.display='none';
@@ -2455,6 +2455,27 @@ function checkGate(){
     document.getElementById('gate-pw').focus();
     document.getElementById('gate-pw').style.borderColor='var(--danger)';
     setTimeout(function(){document.getElementById('gate-pw').style.borderColor='';},1200);
+  }
+}
+
+// ── CLAUDE FETCH — goes direct to Anthropic if API key present (needed for MCP auth), else via proxy ──
+async function claudeFetch(body){
+  var apiKey=sessionStorage.getItem('qa-apikey');
+  if(apiKey){
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-beta':'mcp-client-2025-04-04'
+      },
+      body:JSON.stringify(body)
+    });
+    return res.json();
+  }else{
+    var res={json:async function(){return claudeFetch(body);}};
+    return res.json();
   }
 }
 
