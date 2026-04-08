@@ -1966,66 +1966,74 @@ async function enrichClient(){
 
   var results={gmail:'',slack:'',confluence:'',jira:'',drive:''};
 
-  // ── Helper: Claude synthesis call ──
+  // ── Helper: call Anthropic with MCP directly from browser ──
   async function mcpCall(servers,userMsg,maxTok){
     var body={model:'claude-sonnet-4-20250514',max_tokens:maxTok||1500,messages:[{role:'user',content:userMsg}]};
+    if(servers)body.mcp_servers=servers;
     var data=await claudeFetch(body);
     return(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
   }
 
-  // ── 1. Gmail — via Claude with context hint ──
-  var gmailEmail=localStorage.getItem('qa-gmail-email');
-  if(gmailEmail){
-    addLog('Searching Gmail for meeting summaries…','working');
-    try{
-      var gmailRaw=await mcpCall(null,'You are searching for client information. Summarise everything you know about a client called "'+clientName+'" from an invent.ai retail AI context. Include objectives, challenges, timeline, key contacts, and any technical requirements. 200-400 words.',1500);
-      if(gmailRaw&&gmailRaw.length>80){results.gmail=gmailRaw;addLog('Gmail context — '+gmailRaw.length+' chars','done');}
-      else{addLog('Gmail — no context found','warn');}
-    }catch(e){addLog('Gmail — error: '+e.message,'warn');}
-  } else {
-    addLog('Gmail — not connected (click ⚙ Connections to set up)','warn');
-  }
+  // ── 1. Gmail ──
+  addLog('Searching Gmail for meeting summaries…','working');
+  try{
+    var gmailQuery='(subject:"meeting summary" OR subject:"meeting recap" OR subject:"call summary" OR subject:"call recap" OR subject:"'+clientName+'") "'+clientName+'" newer_than:180d';
+    var gmailRaw=await mcpCall(
+      [{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'Gmail'}],
+      'Search Gmail for all emails related to client "'+clientName+'" using query: '+gmailQuery+'. For each email found, read the full message body. Synthesise the key information: project context, objectives, challenges, constraints, next steps, key contacts (200-400 words).',
+      2000
+    );
+    if(gmailRaw&&gmailRaw.length>80){results.gmail=gmailRaw;addLog('Gmail — '+gmailRaw.length+' chars ✓','done');}
+    else{addLog('Gmail — no relevant emails found','warn');}
+  }catch(e){addLog('Gmail — error: '+e.message,'warn');}
 
-  // ── 2. Slack — via Claude ──
-  var slackToken=localStorage.getItem('qa-slack-token');
-  if(slackToken){
-    addLog('Searching Slack for client mentions…','working');
-    try{
-      var slackRaw=await mcpCall(null,'Search for Slack discussion context about "'+clientName+'" at invent.ai. What are the key talking points, decisions, or issues raised? 150-300 words.',1000);
-      if(slackRaw&&slackRaw.length>80){results.slack=slackRaw;addLog('Slack — '+slackRaw.length+' chars','done');}
-      else{addLog('Slack — no messages found','warn');}
-    }catch(e){addLog('Slack — error: '+e.message,'warn');}
-  } else {
-    addLog('Slack — not connected (click ⚙ Connections to set up)','warn');
-  }
+  // ── 2. Slack ──
+  addLog('Searching Slack for client mentions…','working');
+  try{
+    var slackRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.slack.com/mcp',name:'Slack'}],
+      'I need to find everything about a client called "'+clientName+'" in Slack. Please do ALL of the following:\n1. List ALL channels (public and private) you have access to — look for any channel with "'+clientName.toLowerCase().replace(/\s+/g,'')+'" or "'+clientName.split(' ')[0].toLowerCase()+'" in the name\n2. Search ALL messages across all channels for "'+clientName+'", "'+clientName.split(' ')[0]+'" and any abbreviations\n3. Read the most recent 20 messages from any matching channels\n4. Search DMs for mentions of "'+clientName+'"\n\nSummarise everything found: key decisions, open items, commercial context, technical discussions, team members involved, current status. Be thorough — this is critical client intelligence. 300-500 words.',
+      3000
+    );
+    if(slackRaw&&slackRaw.length>80){results.slack=slackRaw;addLog('Slack — '+slackRaw.length+' chars ✓','done');}
+    else{addLog('Slack — no relevant messages found','warn');}
+  }catch(e){addLog('Slack — error: '+e.message,'warn');}
 
-  // ── 3. Confluence — direct REST API ──
-  var atlEmail=localStorage.getItem('qa-atl-email');
-  if(atlEmail){
-    addLog('Searching Confluence for documentation…','working');
-    try{
-      var confRaw=await atlassianSearch(clientName,'confluence');
-      if(confRaw&&confRaw.length>50){results.confluence=confRaw;addLog('Confluence — '+confRaw.length+' chars of docs','done');}
-      else{addLog('Confluence — no pages found for "'+clientName+'"','warn');}
-    }catch(e){addLog('Confluence — error: '+e.message,'warn');}
-  } else {
-    addLog('Confluence — not connected (click ⚙ Connections to set up)','warn');
-  }
+  // ── 3. Confluence ──
+  addLog('Searching Confluence for documentation…','working');
+  try{
+    var confRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+      'Search Confluence thoroughly for the client "'+clientName+'". Do ALL of the following:\n1. Search all spaces for pages containing "'+clientName+'" or "'+clientName.split(' ')[0]+'"\n2. Look in the client-specific spaces if any exist\n3. Check the OMEGA space for any solution or pre-sales pages mentioning "'+clientName+'"\n4. Check for meeting notes, discovery docs, SOW references, or project pages\n5. Read the full content of any matching pages\n\nSummarise everything found: project scope, solutions discussed, technical requirements, data landscape, integration needs, timeline, key contacts, open questions. 300-500 words. If nothing found, say exactly what you searched.',
+      3000
+    );
+    if(confRaw&&confRaw.length>80){results.confluence=confRaw;addLog('Confluence — '+confRaw.length+' chars ✓','done');}
+    else{addLog('Confluence — no relevant pages found','warn');}
+  }catch(e){addLog('Confluence — error: '+e.message,'warn');}
 
-  // ── 4. Jira — direct REST API ──
-  if(atlEmail){
-    addLog('Searching Jira for issues and epics…','working');
-    try{
-      var jiraRaw=await atlassianSearch(clientName,'jira');
-      if(jiraRaw&&jiraRaw.length>30){results.jira=jiraRaw;addLog('Jira — '+jiraRaw.length+' chars of issues','done');}
-      else{addLog('Jira — no issues found for "'+clientName+'"','warn');}
-    }catch(e){addLog('Jira — error: '+e.message,'warn');}
-  } else {
-    addLog('Jira — not connected (click ⚙ Connections to set up)','warn');
-  }
+  // ── 4. Jira ──
+  addLog('Searching Jira for issues and epics…','working');
+  try{
+    var jiraRaw=await mcpCall(
+      [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+      'Search Jira thoroughly for client "'+clientName+'". Do ALL of the following:\n1. Search all projects for issues/epics mentioning "'+clientName+'" or "'+clientName.split(' ')[0]+'"\n2. Look for any project KEY that matches the client\n3. List all epics, stories and tasks found\n4. Check for any delivery, onboarding or implementation issues\n\nSummarise: project keys found, epic names, open issues, solution types in scope, delivery status, risks or blockers, key team members. 200-400 words.',
+      2000
+    );
+    if(jiraRaw&&jiraRaw.length>80){results.jira=jiraRaw;addLog('Jira — '+jiraRaw.length+' chars ✓','done');}
+    else{addLog('Jira — no relevant issues found','warn');}
+  }catch(e){addLog('Jira — error: '+e.message,'warn');}
 
-  // ── 5. Drive — skipped (requires OAuth) ──
-  addLog('Drive — skipped (connect via ⚙ Connections in a future update)','warn');
+  // ── 5. Google Drive ──
+  addLog('Searching Google Drive for documents…','working');
+  try{
+    var driveRaw=await mcpCall(
+      [{type:'url',url:'https://gdrive.mcp.claude.com/mcp',name:'GoogleDrive'}],
+      'Search Google Drive for files related to "'+clientName+'". Summarise: SOW, scoping info, data specs, integration requirements (150-300 words).',
+      1500
+    );
+    if(driveRaw&&driveRaw.length>80){results.drive=driveRaw;addLog('Drive — '+driveRaw.length+' chars ✓','done');}
+    else{addLog('Drive — no relevant files found','warn');}
+  }catch(e){addLog('Drive — error: '+e.message,'warn');}
 
   // ── Check we got something ──
   var allContext=[results.gmail,results.slack,results.confluence,results.jira,results.drive].filter(Boolean).join('\n\n');
@@ -2090,33 +2098,20 @@ async function enrichClient(){
       var solsInScope=reqSolScope.filter(function(id){return CONFLUENCE_KB[id]&&CONFLUENCE_KB[id].confluenceUrl;});
       var confPagePromises=solsInScope.map(async function(id){
         var kb=CONFLUENCE_KB[id];
-        var atlEmail=localStorage.getItem('qa-atl-email');
-        var atlToken=localStorage.getItem('qa-atl-token');
-        var atlDomain=localStorage.getItem('qa-atl-domain');
-        if(atlEmail&&atlToken&&atlDomain){
-          try{
-            // Extract page ID from URL
-            var pageIdMatch=kb.confluenceUrl.match(/\/pages\/(\d+)/);
-            if(pageIdMatch){
-              var pageId=pageIdMatch[1];
-              var base='https://'+atlDomain.replace('.atlassian.net','')+'.atlassian.net';
-              var auth='Basic '+btoa(atlEmail+':'+atlToken);
-              var r=await fetch(base+'/wiki/rest/api/content/'+pageId+'?expand=body.storage',{headers:{'Authorization':auth,'Accept':'application/json'}});
-              if(r.ok){
-                var pd=await r.json();
-                var text=pd.body&&pd.body.storage?pd.body.storage.value.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,1200):'';
-                return'### '+kb.name+' (from Confluence)\n'+(text||kb.description);
-              }
-            }
-          }catch(e){}
-        }
-        return'### '+kb.name+'\n'+kb.description;
+        try{
+          var pageRaw=await mcpCall(
+            [{type:'url',url:'https://mcp.atlassian.com/v1/mcp',name:'Atlassian'}],
+            'Fetch the Confluence page at URL: '+kb.confluenceUrl+'. Return only the plain text content — capability description, features, supported use cases, integration requirements, limitations. No HTML.',
+            1500
+          );
+          return'### '+kb.name+' (from Confluence)\n'+(pageRaw&&pageRaw.length>50?pageRaw.substring(0,1200):kb.description);
+        }catch(e){return'### '+kb.name+'\n'+kb.description;}
       });
       var pageTexts=await Promise.all(confPagePromises);
       confluenceCapabilities=pageTexts.join('\n\n');
       addLog('Confluence capability pages loaded for '+solsInScope.length+' solutions ✓','done');
     }catch(e){
-      addLog('Confluence capability fetch failed, using local KB fallback','warn');
+      addLog('Confluence capability fetch failed, using local KB','warn');
       confluenceCapabilities=reqSolScope.map(function(id){var sol=SOL_KNOWLEDGE[id];return'### '+sol.name+'\nCore: '+sol.core.join('; ')+'\nAdvanced: '+sol.advanced.join('; ')+'\nIntegrations: '+sol.integrations.join('; ');}).join('\n\n');
     }
 
@@ -2545,10 +2540,33 @@ function updateConnectionDots(){
   dot('gmail-status-dot',gmailOk);dot('atlassian-status-dot',atlOk);dot('slack-status-dot',slackOk);
 }
 
-// ── CLAUDE FETCH — via /api/claude proxy ──
+// ── CLAUDE FETCH — fetches API key from server, then calls Anthropic directly from browser (enables MCP auth) ──
+var _cachedApiKey=null;
 async function claudeFetch(body){
-  var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  return res.json();
+  if(!_cachedApiKey){
+    try{
+      var kr=await fetch('/api/claude',{method:'GET'});
+      var kd=await kr.json();
+      _cachedApiKey=kd.key;
+    }catch(e){_cachedApiKey=null;}
+  }
+  if(_cachedApiKey){
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':_cachedApiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-beta':'mcp-client-2025-04-04'
+      },
+      body:JSON.stringify(body)
+    });
+    return res.json();
+  }else{
+    // fallback to proxy
+    var res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    return res.json();
+  }
 }
 
 // ── DIRECT ATLASSIAN REST API ──
